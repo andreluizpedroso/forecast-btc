@@ -1,4 +1,4 @@
-# Previsão de Preços do Bitcoin com LSTM
+# Forecast BTC — Previsão de Bitcoin com LSTM
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -9,189 +9,217 @@
 [![Last commit](https://img.shields.io/github/last-commit/andreluizpedroso/forecast_btc?logo=github)](https://github.com/andreluizpedroso/forecast_btc/commits/main)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://forecastbtc-jisdg7mfjdwzjngbr6suwq.streamlit.app/)
 
-Este projeto utiliza Machine Learning para prever preços futuros do **Bitcoin** (`BTC-USD`) com base em dados históricos, utilizando redes neurais LSTM.  
-Além disso, o projeto gera uma recomendação automática de **Compra** ou **Aguardar** baseada em médias móveis.
+Aplicação de Machine Learning que estima o próximo preço de fechamento do
+Bitcoin (`BTC-USD`) com uma rede neural LSTM. O projeto oferece uma interface
+Streamlit, uma API REST com FastAPI e um sinal experimental baseado no
+cruzamento das médias móveis de 20 e 80 períodos.
 
----
+> [!WARNING]
+> Este projeto tem finalidade educacional. As previsões e os sinais exibidos
+> não constituem recomendação de investimento.
 
-## 📚 Tecnologias Utilizadas
+## Demonstração
 
-- Python 3.10+
-- Streamlit
-- FastAPI
-- TensorFlow/Keras
-- Scikit-learn
-- yFinance
-- Pandas
-- Plotly
-- SQLite3
-- Docker
+[Acessar a aplicação no Streamlit](https://forecastbtc-jisdg7mfjdwzjngbr6suwq.streamlit.app/)
 
----
+Na interface, escolha uma data entre 1 e 30 dias após o último registro do
+banco local. A aplicação exibe o preço estimado em dólar, as médias móveis e o
+sinal **Comprar** ou **Aguardar**.
 
-## 🎯 Objetivo do Projeto
+## Funcionalidades
 
-- Coletar dados históricos do Bitcoin via Yahoo Finance e armazenar em um banco de dados SQLite.
-- Treinar um modelo LSTM para previsão de preços.
-- Exibir previsões e recomendações de compra ou espera com base em médias móveis.
-- Disponibilizar o modelo por meio de uma API REST com FastAPI.
-- Empacotar e rodar a API em Docker para facilitar o deploy.
+- previsão recursiva de até 30 dias pela interface;
+- endpoint para previsão com histórico informado pelo usuário;
+- endpoint automático com dados recentes do Yahoo Finance;
+- gráfico interativo de histórico, projeção, MM20 e MM80;
+- persistência do histórico em SQLite;
+- API documentada automaticamente com OpenAPI/Swagger;
+- execução da API em container Docker;
+- testes unitários da previsão, recomendação e camada de dados.
 
----
+## Arquitetura
 
-## 💪 Processo Completo
+```mermaid
+flowchart LR
+    UI[Streamlit] --> Forecast[Lógica de previsão]
+    API[FastAPI] --> Forecast
+    UI --> Data[Camada de dados]
+    API --> Data
+    Forecast --> Model[Modelo LSTM]
+    Data --> DB[(SQLite)]
+    Data --> Yahoo[Yahoo Finance]
+```
 
-### 1. Configuração Inicial (Ambiente Local)
+A interface e a API compartilham a mesma implementação. A janela temporal não
+fica duplicada no código: ela é lida diretamente do modelo salvo, que atualmente
+espera **10 preços de fechamento**.
+
+```text
+forecast_btc/
+├── forecast_btc/
+│   ├── api.py           # Rotas, contratos e dependências da API
+│   ├── charts.py        # Construção dos gráficos Plotly
+│   ├── config.py        # Constantes e caminhos do projeto
+│   ├── data.py          # Acesso ao SQLite e Yahoo Finance
+│   ├── forecasting.py   # Previsão e regras de negócio
+│   └── model.py         # Carregamento e inspeção do modelo
+├── tests/               # Testes automatizados
+├── app.py               # Ponto de entrada do Streamlit
+├── main.py              # Ponto de entrada ASGI
+├── finance.db           # Snapshot do histórico
+├── modelo_lstm.h5       # Modelo treinado
+├── Forecast.ipynb       # Exploração e treinamento
+├── Dockerfile
+└── requirements.txt
+```
+
+## Tecnologias
+
+- Python, Pandas e NumPy;
+- TensorFlow/Keras e Scikit-learn;
+- Streamlit e Plotly;
+- FastAPI, Pydantic e Uvicorn;
+- yFinance e SQLite;
+- Docker.
+
+## Instalação
+
+Pré-requisitos: Python 3.10 ou superior e Git.
 
 ```bash
 git clone https://github.com/andreluizpedroso/forecast_btc.git
 cd forecast_btc
+python -m venv .venv
+```
 
-python -m venv venv
-venv\Scripts\activate  # Windows
-# ou
-source venv/bin/activate  # Linux/Mac
+Ative o ambiente virtual:
 
+```powershell
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+```
+
+```bash
+# Linux ou macOS
+source .venv/bin/activate
+```
+
+Instale as dependências:
+
+```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
-
-### 2. Estrutura de Arquivos
-
-```
-forecast_btc/
-├── forecast_btc/
-│   ├── api.py           # Rotas e contratos da API
-│   ├── charts.py        # Gráficos Plotly
-│   ├── config.py        # Configurações e caminhos
-│   ├── data.py          # SQLite e Yahoo Finance
-│   ├── forecasting.py   # Previsão e regras de negócio
-│   └── model.py         # Carregamento do modelo LSTM
-├── tests/               # Testes automatizados
-├── app.py               # Entrada da interface Streamlit
-├── main.py              # Entrada ASGI da API
-├── finance.db           # Base de dados SQLite
-├── modelo_lstm.h5       # Modelo LSTM treinado
-├── Forecast.ipynb       # Experimentos e treinamento
-└── Dockerfile           # Imagem da API
-```
-
-A interface e a API usam a mesma implementação de previsão. O tamanho da janela
-é obtido diretamente do modelo salvo, evitando configurações divergentes.
-
----
-
-## 🖥️ Interface com Streamlit
+## Executando a interface
 
 ```bash
 streamlit run app.py
 ```
 
-Abra no navegador: [http://localhost:8501](http://localhost:8501)
+Acesse [http://localhost:8501](http://localhost:8501). A data inicial da
+previsão depende do registro mais recente presente em `finance.db`.
 
----
+## Executando a API
 
-## 🔢 Funcionalidades
-
-- [x] Coleta e armazenamento de dados históricos em SQLite
-- [x] Treinamento e salvamento de modelo LSTM
-- [x] Interface Streamlit para previsão de até 30 dias
-- [x] Recomendação de Compra ou Aguardar (MM20 e MM80)
-- [x] Gráficos interativos com Plotly
-- [x] API REST com FastAPI
-- [x] Endpoint automático de previsão via yFinance
-- [x] Empacotamento com Docker
-
----
-
-## 📊 Exemplo de Uso (API FastAPI)
-
-### Endpoints:
 ```bash
 uvicorn main:app --reload
 ```
-- `GET /` → Verifica status
-- `POST /prever` → Envia JSON com pelo menos 10 valores históricos
-- `POST /prever_auto` → Faz previsão automática com dados do yFinance
 
-### Exemplo:
+A documentação interativa estará disponível em
+[http://localhost:8000/docs](http://localhost:8000/docs).
 
-```json
-POST /prever
-{
-  "historico": [61234.1, 61300.2, ..., 61150.2]
-}
+### Endpoints
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `GET` | `/` | Verifica se a API está online |
+| `POST` | `/prever` | Prevê o próximo fechamento com o histórico enviado |
+| `POST` | `/prever_auto` | Busca dados recentes no Yahoo Finance e prevê o próximo fechamento |
+
+### Previsão manual
+
+Envie pelo menos 10 preços em ordem cronológica:
+
+```bash
+curl -X POST http://localhost:8000/prever \
+  -H "Content-Type: application/json" \
+  -d '{"historico":[61234.10,61300.20,61190.80,61550.40,61780.00,61620.30,61990.10,62110.50,62040.70,62300.90]}'
 ```
 
-```json
 Resposta:
+
+```json
 {
-  "preco_previsto": 61380.45
+  "preco_previsto": 62184.32,
+  "dias_usados": 10,
+  "fonte": "Entrada manual"
 }
 ```
 
----
+O valor acima é apenas ilustrativo; a resposta real depende dos preços
+enviados e do modelo disponível.
 
-## 🐳 Docker
+### Previsão automática
 
-### 1. Build da imagem:
+```bash
+curl -X POST http://localhost:8000/prever_auto
+```
+
+Esse endpoint consulta o `BTC-USD` no Yahoo Finance e pode falhar caso o serviço
+externo esteja indisponível.
+
+## Docker
+
+O container inicia a API FastAPI na porta 8000:
+
 ```bash
 docker build -t forecast-btc-api .
+docker run --rm -p 8000:8000 forecast-btc-api
 ```
 
-### 2. Executar:
-```bash
-docker run -d -p 8000:8000 forecast-btc-api
-```
+Depois do início, acesse [http://localhost:8000/docs](http://localhost:8000/docs).
 
-Acesse: [http://localhost:8000/docs](http://localhost:8000/docs)
+## Testes
 
----
-
-## 🧠 Modelo de Machine Learning
-
-- Tipo: LSTM (Long Short-Term Memory)
-- Arquitetura: 1 camada LSTM (64 unidades) + 1 densa
-- Perda: MSE (Mean Squared Error)
-- Otimizador: Adam
-- Treinamento com 70% dos dados
-- Previsão do próximo fechamento (1 dia à frente)
-
-> **Aviso:** as previsões e o sinal por médias móveis são experimentais e não
-> constituem recomendação financeira.
-
----
-
-## ✅ Testes
+Os testes não precisam carregar o TensorFlow nem acessar a internet:
 
 ```bash
 python -m unittest discover -v
 ```
 
----
+## Modelo
 
-## 📅 Limitações
+- entrada: 10 preços de fechamento normalizados;
+- arquitetura: uma camada LSTM com 64 unidades e uma camada densa;
+- função de perda: erro quadrático médio (MSE);
+- otimizador: Adam;
+- saída: estimativa do próximo fechamento;
+- previsões de vários dias: estratégia recursiva, reutilizando cada estimativa
+  como entrada do passo seguinte.
 
-- A previsão é feita com base apenas no fechamento (univariada)
-- Não considera variáveis externas (ex: volume, notícias)
-- Previsão limitada ao próximo dia (em `/prever_auto`)
-- Interface Streamlit limitada a 30 dias por design
+O notebook `Forecast.ipynb` registra a exploração, preparação dos dados e o
+treinamento. A aplicação utiliza diretamente o artefato `modelo_lstm.h5` e não
+treina um novo modelo durante a inicialização.
 
----
+## Limitações
 
-## 🌐 Fonte de Dados
+- o modelo é univariado e considera apenas o preço de fechamento;
+- volume, indicadores macroeconômicos, notícias e sentimento não são usados;
+- previsões recursivas acumulam erro à medida que o horizonte aumenta;
+- o sinal por médias móveis é uma regra simples, não uma estratégia validada;
+- a interface usa o snapshot em `finance.db`, que precisa ser atualizado para
+  acompanhar novos pregões;
+- não há quantificação de incerteza nem intervalo de confiança;
+- desempenho passado não garante resultados futuros.
 
-- [Yahoo Finance - Bitcoin (BTC-USD)](https://finance.yahoo.com/quote/BTC-USD)
+## Fonte dos dados
 
----
+[Yahoo Finance — Bitcoin USD (BTC-USD)](https://finance.yahoo.com/quote/BTC-USD/)
 
-## 👤 Autor
+## Autor
 
-**Andre Luiz Pedroso**  
-Projeto desenvolvido para a **Pós-Tech - Tech Challenge Fase 4 - Engenharia de Machine Learning**.
+**Andre Luiz Pedroso**
 
----
-
-# 🚀 Vamos prever o futuro! 📈  
-🔗 [Acesse o app online (Streamlit)](https://forecastbtc-jisdg7mfjdwzjngbr6suwq.streamlit.app/)
+Projeto desenvolvido para a **Pós-Tech — Tech Challenge Fase 4 — Engenharia de
+Machine Learning**.
