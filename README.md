@@ -180,33 +180,25 @@ docker run --rm -p 8000:8000 forecast-btc-api
 
 Depois do início, acesse [http://localhost:8000/docs](http://localhost:8000/docs).
 
-## Deploy
+## Onde publicar?
 
-A arquitetura atual foi pensada para ambientes que executam processos Python
-com todas as dependências de Machine Learning disponíveis:
+A arquitetura atual precisa de um ambiente capaz de executar Python com as
+dependências de Machine Learning do projeto. As opções recomendadas são:
 
-- **interface:** [Streamlit Community Cloud](https://streamlit.io/cloud);
-- **API:** serviço com suporte a Docker, como Render, Railway ou Google Cloud Run;
-- **modelo:** carregado pelo TensorFlow a partir de `modelo_lstm.h5`.
+| Componente | Plataforma sugerida | Observação |
+| --- | --- | --- |
+| Interface Streamlit | [Streamlit Community Cloud](https://streamlit.io/cloud) | Opção mais simples para executar `app.py` |
+| API FastAPI | Render, Railway ou Google Cloud Run | Permitem publicar a API usando o `Dockerfile` |
+| Aplicação completa | Render, Railway ou Google Cloud Run | Suportam TensorFlow e processos Python persistentes |
 
-### Por que o projeto não é publicado no Vercel?
+O Vercel é mais adequado para frontends leves e funções serverless. No build
+testado, as dependências deste projeto ocuparam aproximadamente **2,48 GB**,
+acima dos limites de 500 MB e 1 GB indicados pelo serviço. O principal impacto
+vem do TensorFlow, somado às demais bibliotecas de análise e visualização.
 
-No build testado, as dependências instaladas ocuparam aproximadamente **2,48 GB**,
-ultrapassando o limite de **500 MB** informado pelo Vercel para a função Python.
-O modo de funções estendidas citado no próprio build aumenta o limite para 1 GB,
-o que ainda não comporta o projeto.
-
-O maior impacto vem do TensorFlow, somado a Streamlit, Scikit-learn, Pandas e
-Plotly. Além disso, o Streamlit mantém um servidor e uma sessão interativa, um
-modelo de execução diferente das funções serverless do Vercel. Fixar a versão
-do Python ou usar o `Dockerfile` não elimina essa limitação de tamanho.
-
-Caso seja necessário usar Vercel no futuro, a alternativa recomendada é criar
-um frontend leve em Next.js ou React para o Vercel e manter a API FastAPI com o
-TensorFlow em um serviço Docker externo. Outra possibilidade seria converter o
-modelo para um runtime menor, como ONNX ou TensorFlow Lite, o que exigiria uma
-refatoração específica. **Nenhuma dessas adaptações faz parte da arquitetura
-atual.**
+Se o Vercel for adotado no futuro, a abordagem recomendada será hospedar nele
+apenas um frontend em Next.js ou React, mantendo a API e o modelo em um dos
+serviços com suporte a Docker listados acima.
 
 ## Testes
 
