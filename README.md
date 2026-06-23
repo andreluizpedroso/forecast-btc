@@ -1,5 +1,14 @@
 # Previsão de Preços do Bitcoin com LSTM
 
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![GitHub stars](https://img.shields.io/github/stars/andreluizpedroso/forecast_btc?style=flat&logo=github)](https://github.com/andreluizpedroso/forecast_btc/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/andreluizpedroso/forecast_btc?logo=github)](https://github.com/andreluizpedroso/forecast_btc/commits/main)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://forecastbtc-jisdg7mfjdwzjngbr6suwq.streamlit.app/)
+
 Este projeto utiliza Machine Learning para prever preços futuros do **Bitcoin** (`BTC-USD`) com base em dados históricos, utilizando redes neurais LSTM.  
 Além disso, o projeto gera uma recomendação automática de **Compra** ou **Aguardar** baseada em médias móveis.
 
@@ -51,16 +60,25 @@ pip install -r requirements.txt
 ### 2. Estrutura de Arquivos
 
 ```
-Forecast_BTC/
-├── app.py               # Interface Streamlit
-├── bitcoin_img.png      # Imagem usada na interface
+forecast_btc/
+├── forecast_btc/
+│   ├── api.py           # Rotas e contratos da API
+│   ├── charts.py        # Gráficos Plotly
+│   ├── config.py        # Configurações e caminhos
+│   ├── data.py          # SQLite e Yahoo Finance
+│   ├── forecasting.py   # Previsão e regras de negócio
+│   └── model.py         # Carregamento do modelo LSTM
+├── tests/               # Testes automatizados
+├── app.py               # Entrada da interface Streamlit
+├── main.py              # Entrada ASGI da API
 ├── finance.db           # Base de dados SQLite
-├── modelo_lstm.h5       # Modelo LSTM salvo
-├── main.py              # API REST com FastAPI
-├── Dockerfile           # Container Docker da API
-├── requirements.txt     # Dependências
-├── README.md            # Este documento
+├── modelo_lstm.h5       # Modelo LSTM treinado
+├── Forecast.ipynb       # Experimentos e treinamento
+└── Dockerfile           # Imagem da API
 ```
+
+A interface e a API usam a mesma implementação de previsão. O tamanho da janela
+é obtido diretamente do modelo salvo, evitando configurações divergentes.
 
 ---
 
@@ -94,7 +112,7 @@ Abra no navegador: [http://localhost:8501](http://localhost:8501)
 uvicorn main:app --reload
 ```
 - `GET /` → Verifica status
-- `POST /prever` → Envia JSON com 60 valores históricos
+- `POST /prever` → Envia JSON com pelo menos 10 valores históricos
 - `POST /prever_auto` → Faz previsão automática com dados do yFinance
 
 ### Exemplo:
@@ -139,6 +157,17 @@ Acesse: [http://localhost:8000/docs](http://localhost:8000/docs)
 - Otimizador: Adam
 - Treinamento com 70% dos dados
 - Previsão do próximo fechamento (1 dia à frente)
+
+> **Aviso:** as previsões e o sinal por médias móveis são experimentais e não
+> constituem recomendação financeira.
+
+---
+
+## ✅ Testes
+
+```bash
+python -m unittest discover -v
+```
 
 ---
 
