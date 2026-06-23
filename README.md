@@ -180,6 +180,34 @@ docker run --rm -p 8000:8000 forecast-btc-api
 
 Depois do início, acesse [http://localhost:8000/docs](http://localhost:8000/docs).
 
+## Deploy
+
+A arquitetura atual foi pensada para ambientes que executam processos Python
+com todas as dependências de Machine Learning disponíveis:
+
+- **interface:** [Streamlit Community Cloud](https://streamlit.io/cloud);
+- **API:** serviço com suporte a Docker, como Render, Railway ou Google Cloud Run;
+- **modelo:** carregado pelo TensorFlow a partir de `modelo_lstm.h5`.
+
+### Por que o projeto não é publicado no Vercel?
+
+No build testado, as dependências instaladas ocuparam aproximadamente **2,48 GB**,
+ultrapassando o limite de **500 MB** informado pelo Vercel para a função Python.
+O modo de funções estendidas citado no próprio build aumenta o limite para 1 GB,
+o que ainda não comporta o projeto.
+
+O maior impacto vem do TensorFlow, somado a Streamlit, Scikit-learn, Pandas e
+Plotly. Além disso, o Streamlit mantém um servidor e uma sessão interativa, um
+modelo de execução diferente das funções serverless do Vercel. Fixar a versão
+do Python ou usar o `Dockerfile` não elimina essa limitação de tamanho.
+
+Caso seja necessário usar Vercel no futuro, a alternativa recomendada é criar
+um frontend leve em Next.js ou React para o Vercel e manter a API FastAPI com o
+TensorFlow em um serviço Docker externo. Outra possibilidade seria converter o
+modelo para um runtime menor, como ONNX ou TensorFlow Lite, o que exigiria uma
+refatoração específica. **Nenhuma dessas adaptações faz parte da arquitetura
+atual.**
+
 ## Testes
 
 Os testes não precisam carregar o TensorFlow nem acessar a internet:
