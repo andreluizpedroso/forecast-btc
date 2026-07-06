@@ -15,9 +15,10 @@ from tensorflow.keras.layers import LSTM, Dense
 
 def carregar_dados_historicos(ativo):
     conn = sqlite3.connect('finance.db')
-    df = pd.read_sql_query(f"""
-        SELECT data, fechamento FROM historico WHERE ativo = '{ativo}' ORDER BY data
-    """, conn)
+    df = pd.read_sql_query(
+        "SELECT data, fechamento FROM historico WHERE ativo = ? ORDER BY data",
+        conn, params=(ativo,)
+    )
     conn.close()
     df['data'] = pd.to_datetime(df['data'])
     return df
@@ -118,9 +119,10 @@ data.rename(columns={'data': 'Date', 'fechamento': 'Close'}, inplace=True)
 data.reset_index(drop=True, inplace=True)
 
 # Preparar dados
+train_size = int(len(data) * 0.7)
 scaler = MinMaxScaler()
-data_scaled = scaler.fit_transform(data[['Close']])
-train_size = int(len(data_scaled) * 0.7)
+scaler.fit(data[['Close']].iloc[:train_size])
+data_scaled = scaler.transform(data[['Close']])
 train_data = data_scaled[:train_size]
 test_data = data_scaled[train_size:]
 sequence_length = 10
@@ -165,7 +167,7 @@ if st.sidebar.button("Gerar Previsão"):
         recomendacao = tomar_decisao(full_data, target_date)
 
         st.subheader(f"Resultado para {target_date}")
-        st.metric(label="Preço Previsto", value=f"R$ {preco_previsto:.2f}")
+        st.metric(label="Preço Previsto (USD)", value=f"$ {preco_previsto:,.2f}")
         st.success(recomendacao)
         st.plotly_chart(fig)
 
