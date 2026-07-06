@@ -21,6 +21,11 @@ __pycache__/
 # Jupyter Notebooks
 .ipynb_checkpoints/
 
+# Testes
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Arquivos temporários de sistema
 .DS_Store
 Thumbs.db
