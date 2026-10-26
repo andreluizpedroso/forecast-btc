@@ -5,8 +5,8 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-LSTM-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![GitHub stars](https://img.shields.io/github/stars/andreluizpedroso/forecast_btc?style=flat&logo=github)](https://github.com/andreluizpedroso/forecast_btc/stargazers)
-[![Last commit](https://img.shields.io/github/last-commit/andreluizpedroso/forecast_btc?logo=github)](https://github.com/andreluizpedroso/forecast_btc/commits/main)
+[![GitHub stars](https://img.shields.io/github/stars/andreluizpedroso/forecast-btc?style=flat&logo=github)](https://github.com/andreluizpedroso/forecast-btc/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/andreluizpedroso/forecast-btc?logo=github)](https://github.com/andreluizpedroso/forecast-btc/commits/main)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://forecastbtc-jisdg7mfjdwzjngbr6suwq.streamlit.app/)
 
 Aplicação de Machine Learning que estima o próximo preço de fechamento do
@@ -87,7 +87,7 @@ forecast_btc/
 Pré-requisitos: Python 3.10 ou superior e Git.
 
 ```bash
-git clone https://github.com/andreluizpedroso/forecast_btc.git
+git clone https://github.com/andreluizpedroso/forecast-btc.git
 cd forecast_btc
 python -m venv .venv
 ```
